@@ -1,0 +1,182 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPaPMivoQdWWExeUOdcHq/y",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/KshitijS093/AI-Lab/blob/main/Lab6(KnowledgeBaseEntailmentAndResolution).ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0bDOiZ__3pwK",
+        "outputId": "f3249e5e-aa16-46cb-f66f-c6d08edf17f1"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Knowledge Base: [(p, q), (q, r), (r, False)]\n",
+            "Query: p\n",
+            "Query entails Knowledge Base: False\n"
+          ]
+        }
+      ],
+      "source": [
+        "#Knowledge Base Entailment\n",
+        "def implies(p, q):\n",
+        "    # If p then q\n",
+        "    return not p or q\n",
+        "\n",
+        "def create_knowledge_base():\n",
+        "    # Define knowledge base using logical statements\n",
+        "    knowledge_base = [lambda x: implies(x[0], x[1]), lambda x: implies(x[1], x[2]), lambda x: not x[2]]\n",
+        "    return knowledge_base\n",
+        "\n",
+        "def generate_truth_combinations():\n",
+        "    # Generate all possible combinations of truth values for p, q, r\n",
+        "    combinations = [(p, q, r) for p in [True, False] for q in [True, False] for r in [True, False]]\n",
+        "    return combinations\n",
+        "\n",
+        "def query_entails(knowledge_base, query, combinations):\n",
+        "    # Check if the knowledge base entails the query for all truth combinations\n",
+        "    for c in combinations:\n",
+        "        s = all(rkbkule(c) for rule in knowledge_base)\n",
+        "        f = query(c)\n",
+        "        if s != f and s != False:\n",
+        "            return 'Does not entail'\n",
+        "    return 'Entails'\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    # Create the knowledge base\n",
+        "    kb = create_knowledge_base()\n",
+        "\n",
+        "    # Define a query\n",
+        "    query = lambda x: x[0]  # Assuming you are checking if p is entailed\n",
+        "\n",
+        "    # Generate all truth combinations\n",
+        "    truth_combinations = generate_truth_combinations()\n",
+        "\n",
+        "    # Check if the query entails the knowledge base for all truth combinations\n",
+        "    result = query_entails(kb, query, truth_combinations)\n",
+        "\n",
+        "    # Display the results\n",
+        "    print(\"Knowledge Base Rules:\", kb)\n",
+        "    print(\"Query:\", query)\n",
+        "    print(\"Result for all truth combinations:\", result)\n",
+        "    return assignments\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    # Create the knowledge base\n",
+        "    kb = create_knowledge_base()\n",
+        "\n",
+        "    # Define a query\n",
+        "    query = symbols('p')\n",
+        "\n",
+        "    # Check if the query entails the knowledge base\n",
+        "    result = query_entails(kb, query)\n",
+        "\n",
+        "    # Display the results\n",
+        "    print(\"Knowledge Base:\", kb)\n",
+        "    print(\"Query:\", query)\n",
+        "    print(\"Query entails Knowledge Base:\", result)\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Knowledge Base Resolution\n",
+        "def negate_literal(literal):\n",
+        "    # Negate a literal\n",
+        "    if literal[0] == '~':\n",
+        "        return literal[1:]\n",
+        "    else:\n",
+        "        return '~' + literal\n",
+        "\n",
+        "def resolve(c1, c2):\n",
+        "    # Apply resolution to two clauses\n",
+        "    resolved_clause = set(c1) | set(c2)\n",
+        "\n",
+        "    for literal in c1:\n",
+        "        if negate_literal(literal) in c2:\n",
+        "            resolved_clause.remove(literal)\n",
+        "            resolved_clause.remove(negate_literal(literal))\n",
+        "\n",
+        "    return tuple(resolved_clause)\n",
+        "\n",
+        "def resolution(knowledge_base):\n",
+        "    # Resolve clauses in the knowledge base until no new resolutions can be made\n",
+        "    while True:\n",
+        "        new_clauses = set()\n",
+        "\n",
+        "        for i, c1 in enumerate(knowledge_base):\n",
+        "            for j, c2 in enumerate(knowledge_base):\n",
+        "                if i != j:\n",
+        "                    new_clause = resolve(c1, c2)\n",
+        "                    if len(new_clause) > 0 and new_clause not in knowledge_base:\n",
+        "                        new_clauses.add(new_clause)\n",
+        "\n",
+        "        if not new_clauses:\n",
+        "            break\n",
+        "\n",
+        "        knowledge_base |= new_clauses\n",
+        "\n",
+        "    return knowledge_base\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    # Example knowledge base\n",
+        "    kb = {('p', 'q'), ('~p', 'r'), ('~q', '~r')}\n",
+        "\n",
+        "    # Apply resolution to the knowledge base\n",
+        "    result = resolution(kb)\n",
+        "\n",
+        "    # Display the results\n",
+        "    print(\"Original Knowledge Base:\", kb)\n",
+        "    print(\"Resolved Knowledge Base:\", result)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "j-K6AQgx68R8",
+        "outputId": "d472c305-1102-45a5-e993-a027c7e7c11a"
+      },
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Original Knowledge Base: {('q', '~r'), ('~r',), ('~q',), ('q', 'p', 'r'), ('~p', '~q', 'r'), ('~q', '~r', 'p'), ('q', 'r'), ('~r', 'p'), ('q', 'p'), ('r', 'p'), ('r',), ('p',), ('~r', '~q', 'p'), ('~q', 'r', 'p'), ('~p', 'q', '~r'), ('~r', 'q'), ('q',), ('~q', 'p', '~r'), ('q', '~r', 'p'), ('~q', '~r'), ('p', '~q'), ('p', '~r'), ('~p', '~r'), ('~p', '~q'), ('~p', 'q', 'r'), ('~q', 'p', 'r'), ('~r', 'q', 'p'), ('~q', 'r'), ('q', 'r', 'p'), ('~r', '~p'), ('p', 'r'), ('~q', 'p'), ('~p', 'r'), ('q', 'p', '~r'), ('~p',), ('~p', '~q', '~r'), ('p', 'q'), ('~r', '~q'), ('~p', 'q')}\n",
+            "Resolved Knowledge Base: {('q', '~r'), ('~r',), ('~q',), ('q', 'p', 'r'), ('~p', '~q', 'r'), ('~q', '~r', 'p'), ('q', 'r'), ('~r', 'p'), ('q', 'p'), ('r', 'p'), ('r',), ('p',), ('~r', '~q', 'p'), ('~q', 'r', 'p'), ('~p', 'q', '~r'), ('~r', 'q'), ('q',), ('~q', 'p', '~r'), ('q', '~r', 'p'), ('~q', '~r'), ('p', '~q'), ('p', '~r'), ('~p', '~r'), ('~p', '~q'), ('~p', 'q', 'r'), ('~q', 'p', 'r'), ('~r', 'q', 'p'), ('~q', 'r'), ('q', 'r', 'p'), ('~r', '~p'), ('p', 'r'), ('~q', 'p'), ('~p', 'r'), ('q', 'p', '~r'), ('~p',), ('~p', '~q', '~r'), ('p', 'q'), ('~r', '~q'), ('~p', 'q')}\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
